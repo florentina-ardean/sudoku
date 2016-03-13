@@ -1,6 +1,6 @@
 package com.sudoku.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,23 +16,27 @@ public class SudokuServiceImplTest {
 	SudokuService sudokuService;
 	
 	@Test
-	public void checkValidBoard() {
-		//valid initial board
-		String testBoard = sudokuService.getBoard();
+	public void checkValidBoardWithNoChanges() {
+		//same as initial board
+		String testBoard = "0000ig000" + 
+						   "00000a00d" + 
+						   "00i00000h" + 
+						   "00dec0000" + 
+						   "0e00hi0a0" + 
+						   "00b0g0h00" + 
+						   "e00000ag0" + 
+						   "0f000hd0c" + 
+						   "bd000000i";
 
 		String newBoard = sudokuService.updateBoard(testBoard);
 		
 		//result should be the same as the initial entry
-		String expectedBoard = testBoard;
-		
-		assertEquals(expectedBoard, newBoard);
+		assertEquals(testBoard, newBoard);
 	}
 	
 	@Test
-	public void checkNonValidBoard() {
-		//invalid initial board
-		//duplicate on row & column & cell - 4
-		String testBoard = "4000ig400" + 
+	public void checkValidBoardWithChanges() {
+		String testBoard = "1300ig000" + 
 						   "00000a00d" + 
 						   "00i00000h" + 
 						   "00dec0000" + 
@@ -44,7 +48,7 @@ public class SudokuServiceImplTest {
 
 		String newBoard = sudokuService.updateBoard(testBoard);
 		
-		String expectedBoard = "D000igD00" + 
+		String expectedBoard = "1300ig000" + 
 							   "00000a00d" + 
 							   "00i00000h" + 
 							   "00dec0000" + 
@@ -57,111 +61,14 @@ public class SudokuServiceImplTest {
 		assertEquals(expectedBoard, newBoard);
 	}
 	
-	@Test
-	public void checkNonValidBoardWithInvalidMarkedValues() {
-		//invalid initial board
-		//duplicate on row & column & cell - D
-		String testBoard = "D000igD00" + 
-						   "00000a00d" + 
-						   "00i00000h" + 
-						   "00dec0000" + 
-						   "0e00hi0a0" + 
-						   "00b0g0h00" + 
-						   "e00000ag0" + 
-						   "0f000hd0c" + 
-						   "bd000000i";
-
-		String newBoard = sudokuService.updateBoard(testBoard);
-		
-		String expectedBoard = "D000igD00" + 
-							   "00000a00d" + 
-							   "00i00000h" + 
-							   "00dec0000" + 
-							   "0e00hi0a0" + 
-							   "00b0g0h00" + 
-							   "e00000ag0" + 
-							   "0f000hd0c" + 
-							   "bd000000i";
-		
-		assertEquals(expectedBoard, newBoard);
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void checkNonValidBoardOtherCharactersThanConventionLessThan0() {
-		//invalid initial board
-		//duplicate on row & column & cell - /
-		String testBoard = "4000ig400" + 
-						   "00000a00d" + 
-						   "00i00000h" + 
-						   "00dec000/" + 
-						   "0e00hi0a0" + 
-						   "00b0g0h00" + 
-						   "e00000ag0" + 
-						   "0f000hd0c" + 
-						   "bd000000i";
-
-		String newBoard = sudokuService.updateBoard(testBoard);
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void checkNonValidBoardOtherCharactersThanCOnventionMoreThan9() {
-		//invalid initial board
-		//duplicate on row & column & cell - ?
-		String testBoard = "4000ig400" + 
-						   "00000a00d" + 
-						   "00i00000h" + 
-						   "00dec000?" + 
-						   "0e00hi0a0" + 
-						   "00b0g0h00" + 
-						   "e00000ag0" + 
-						   "0f000hd0c" + 
-						   "bd000000i";
-
-		String newBoard = sudokuService.updateBoard(testBoard);
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void checkNonValidBoardOtherCharactersThanConventionLessThana() {
-		//invalid initial board
-		//duplicate on row & column & cell - ^
-		String testBoard = "4000ig400" + 
-						   "00000a00d" + 
-						   "00i00000h" + 
-						   "00dec000^" + 
-						   "0e00hi0a0" + 
-						   "00b0g0h00" + 
-						   "e00000ag0" + 
-						   "0f000hd0c" + 
-						   "bd000000i";
-
-		String newBoard = sudokuService.updateBoard(testBoard);
-	}
-	
-	@Test(expected = IllegalArgumentException.class)
-	public void checkNonValidBoardOtherCharactersThanCOnventionMoreThani() {
-		//invalid initial board
-		//duplicate on row & column & cell - m
-		String testBoard = "m000ig400" + 
-						   "00000a00d" + 
-						   "00i00000h" + 
-						   "00dec000m" + 
-						   "0e00hi0a0" + 
-						   "00b0g0h00" + 
-						   "e00000ag0" + 
-						   "0f000hd0c" + 
-						   "bd000000i";
-
-		String newBoard = sudokuService.updateBoard(testBoard);
-	}
 	
 	@Test
-	public void checkNonValidBoardDuplicateFxedValue() {
-		//invalid initial board
-		//duplicate on row & column & cell
+	public void checkInvalidBoardChangeWithFixedValueSameRow() {
+		//duplicate on row
 		String testBoard = "0000ig000" + 
-						   "50000a00d" + 
+						   "40000a00d" + 
 						   "00i00000h" + 
-						   "00dec0003" + 
+						   "00dec0000" + 
 						   "0e00hi0a0" + 
 						   "00b0g0h00" + 
 						   "e00000ag0" + 
@@ -171,18 +78,130 @@ public class SudokuServiceImplTest {
 		String newBoard = sudokuService.updateBoard(testBoard);
 		
 		String expectedBoard = "0000ig000" + 
-							   "E0000a00d" + 
+							   "D0000a00d" + 
 							   "00i00000h" + 
-							   "00dec000C" + 
+							   "00dec0000" + 
 							   "0e00hi0a0" + 
 							   "00b0g0h00" + 
 							   "e00000ag0" + 
 							   "0f000hd0c" + 
 							   "bd000000i";
-			
+		
 		assertEquals(expectedBoard, newBoard);
-
 	}
 	
+	@Test
+	public void checkInvalidBoardChangeWithNonFixedValueSameColumn() {
+		String testBoard = "5000ig000" + 
+						   "00000a00d" + 
+						   "00i00000h" + 
+						   "00dec0000" + 
+						   "0e00hi0a0" + 
+						   "00b0g0h00" + 
+						   "e00000ag0" + 
+						   "0f000hd0c" + 
+						   "bd000000i";
+
+		String newBoard = sudokuService.updateBoard(testBoard);
+		
+		String expectedBoard = "E000ig000" + 
+							   "00000a00d" + 
+							   "00i00000h" + 
+							   "00dec0000" + 
+							   "0e00hi0a0" + 
+							   "00b0g0h00" + 
+							   "e00000ag0" + 
+							   "0f000hd0c" + 
+							   "bd000000i";
+		
+		assertEquals(expectedBoard, newBoard);
+	}
 	
+	@Test
+	public void checkInvalidBoardChangeWithNonFixedValueSameCell() {
+		String testBoard = "0300ig000" + 
+						   "30000a00d" + 
+						   "00i00000h" + 
+						   "00dec0000" + 
+						   "0e00hi0a0" + 
+						   "00b0g0h00" + 
+						   "e00000ag0" + 
+						   "0f000hd0c" + 
+						   "bd000000i";
+
+		String newBoard = sudokuService.updateBoard(testBoard);
+		
+		String expectedBoard = "0C00ig000" + 
+							   "C0000a00d" + 
+							   "00i00000h" + 
+							   "00dec0000" + 
+							   "0e00hi0a0" + 
+							   "00b0g0h00" + 
+							   "e00000ag0" + 
+							   "0f000hd0c" + 
+							   "bd000000i";
+		
+		assertEquals(expectedBoard, newBoard);
+	}
+	
+	@Test
+	public void checkInvalidBoardChangeWithNonFixedInvalidValues() {
+		String testBoard = "m3.0ig=Zz" + 
+						   "3E000a00d" + 
+						   "00i00000h" + 
+						   "00dec0000" + 
+						   "0e00hi0a0" + 
+						   "00b0g0h00" + 
+						   "e00000ag0" + 
+						   "0f000hd0c" + 
+						   "bd000000i";
+
+		String newBoard = sudokuService.updateBoard(testBoard);
+		
+		String expectedBoard = "0C00ig000" + 
+							   "C0000a00d" + 
+							   "00i00000h" + 
+							   "00dec0000" + 
+							   "0e00hi0a0" + 
+							   "00b0g0h00" + 
+							   "e00000ag0" + 
+							   "0f000hd0c" + 
+							   "bd000000i";
+		
+		assertEquals(expectedBoard, newBoard);
+	}	
+	
+	@Test
+	public void checkValidBoard3x3() {
+		String testBoard = "000" + 
+						   "0a0" + 
+						   "00i";
+		
+		String newBoard = sudokuService.updateBoard(testBoard);
+		
+		assertEquals(testBoard, newBoard);
+	}
+	
+	@Test
+	public void checkGetValidBoard() {
+		//same as initial board
+		String testBoard = sudokuService.getBoard();
+		
+		String newBoard = sudokuService.updateBoard(testBoard);
+		
+		String expectedBoard = "0000ig000" + 
+						   "00000a00d" + 
+						   "00i00000h" + 
+						   "00dec0000" + 
+						   "0e00hi0a0" + 
+						   "00b0g0h00" + 
+						   "e00000ag0" + 
+						   "0f000hd0c" + 
+						   "bd000000i";
+
+		
+		
+		//result should be the same as the initial entry
+		assertEquals(expectedBoard, newBoard);
+	}
 }

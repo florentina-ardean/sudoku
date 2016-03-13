@@ -1,17 +1,29 @@
 package com.sudoku.service;
 
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.springframework.stereotype.Service;
 
+import com.sudoku.model.Cell;
+
+/**
+ * Validates sudoku board 9x9
+ * Marks elements:
+ * duplicates 1-9 become A-I
+ * fixed initial values 1-9 become a-i
+ * validated new values 1-9 become 1-9
+ * 
+ * @author florentina.ardean
+ *
+ */
 @Service
 public class SudokuServiceImpl implements SudokuService {
-	char[][] modifiedBoard = new char[ROWS][ROWS];
+	Cell[][] updatedBoard = new Cell[ROWS][ROWS];
 
 	private static final int ROWS = 9;
 	private static final int CELL_SIZE = 3;
 
+	/**
+	 * return a string of length 81
+	 */
 	@Override
 	public String getBoard() {
 		return "0000ig000" + 
@@ -26,69 +38,174 @@ public class SudokuServiceImpl implements SudokuService {
 	}
 
 	@Override
-	public String updateBoard(String moves) {
-		char[][] newBoard = convertToBidimensional(moves.toCharArray(), ROWS, ROWS);
-		for (int i = 0; i < ROWS; i++)
-			for (int j = 0; j < ROWS; j++) {
-				modifiedBoard[i][j] = newBoard[i][j];
-				//if invalid code received convert to number 1-9
-				//mark as invalid should be done on server by sudoku service
-				if (modifiedBoard[i][j] >= 'A' && modifiedBoard[i][j] <= 'I')
-					// reset error code to int
-					modifiedBoard[i][j] = getCharForValue(modifiedBoard[i][j] - 'A' + 1);
-			}
-
-		// check duplicates on row
-		checkRows(newBoard);
-
-		// check duplicates on column
-		checkCols(newBoard);
-
-		// check duplicates on cell
-		checkCell(newBoard);
-
-		System.out.println("OK");
-
-		String modBoard = getStringFromArray(modifiedBoard);
-
+	public String updateBoard(String moves) { 
+		//char[][] newBoard = convertToBidimensional(moves.toCharArray(), ROWS, ROWS);
+		String modBoard = moves;
+		
+		Cell[][] board = convertToBoardOfCells(moves.toCharArray(), ROWS, ROWS);
+		
+		if (board != null) {
+			System.out.println(getStringFromCellArray(board));
+			
+			updatedBoard = initBoard(board);
+			
+			// check duplicates on row
+			checkRows(updatedBoard);
+			
+	
+			// check duplicates on column
+			checkCols(updatedBoard);
+			
+	
+			// check duplicates on cell
+			checkCells(updatedBoard);
+			
+	
+			modBoard = getStringFromCellArray(updatedBoard);
+		}
+		
 		return modBoard;
 	}
-
-	public String getStringFromArray(char[][] arr) {
-		String boardValue = "";
-		for (int row = 0; row < ROWS; row++) {
-			for (int col = 0; col < ROWS; col++) {
-				boardValue += arr[row][col];
+	
+	/**
+	 * Convert array of chars to board of Cells
+	 * 
+	 * @param array
+	 * @param rows
+	 * @param cols
+	 * @return
+	 */
+	private Cell[][] convertToBoardOfCells(char[] array, final int rows, final int cols) {
+		if (array.length != (rows * cols)) {
+			return null;
+		}
+		
+		Cell[][] cells = new Cell[rows][cols];
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				char value = array[i * cols + j];
+				int number = decodeValue(value); 
+				
+				Cell cell = new Cell();
+				cell.setValue(number);
+				cell.setType(isFixed(value) ? Cell.Type.FIXED : Cell.Type.VALID);
+				
+				cells[i][j] = cell;
 			}
 		}
-		return boardValue;
+		
+		return cells;
 	}
+	
+	/**
+	 * Returns true if the value is from initial board 
+	 * @param value
+	 * @return
+	 */
+	private boolean isFixed(char value) {
+		boolean isFixed = false;
+		if (value >= 'a' && value <= 'i') {
+			isFixed = true;
+		}
+		return isFixed;
+	}
+	
+	/**
+	 * Copy board of Cells 
+	 */
+	private Cell[][] initBoard(Cell[][] board) {
+		Cell[][] myBoard = new Cell[ROWS][ROWS];
+		
+		for (int i = 0; i < ROWS; i++) {
+			for (int j = 0; j < ROWS; j++) {
+				myBoard[i][j] = new Cell(board[i][j]);
+			}
+		}
+		
+		return myBoard;
+	}
+	
+	/**
+	 * Check duplicates only on rows
+	 * 
+	 * @param board
+	 */
+	private void checkRows(Cell[][] board) {
 
-	private void checkCell(char[][] newBoard) {
+		for (int row = 0; row < ROWS; row++) {
+			for (int col = 0; col < ROWS - 1; col++) {
+				int value = board[row][col].getValue();
+				if (value > 0) {
+					for (int i = col + 1; i < ROWS; i++) {
+						int currentValue = board[row][i].getValue();
+						if (value == currentValue) {
+							// mark as invalid value (from A to I)
+							markValueAsInvalid(updatedBoard, row, col);
+							markValueAsInvalid(updatedBoard, row, i);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Check duplicates only on colums
+	 * 
+	 * @param board
+	 */
+	private void checkCols(Cell[][] board) {
+		for (int col = 0; col < ROWS; col++) {
+			for (int row = 0; row < ROWS - 1; row++) {
+				int value = board[row][col].getValue();
+				if (value > 0) {
+					for (int i = row + 1; i < ROWS; i++) {
+						int currentValue = board[i][col].getValue();
+						if (value == currentValue) {
+							// mark as invalid value (from A to I)
+							markValueAsInvalid(updatedBoard, row, col);
+							markValueAsInvalid(updatedBoard, i, col);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Check duplicates in all board cells
+	 * 
+	 * @param board
+	 */
+	private void checkCells(Cell[][] board) {
 		for (int row = 0; row < ROWS; row += CELL_SIZE) {
 			for (int col = 0; col < ROWS; col += CELL_SIZE) {
-				checkCell(newBoard, row, col);
+				checkCell(board, row, col);
 			}
 		}
 	}
 
-	public void checkCell(char[][] newBoard, int startIndexRow, int startIndexCol) {
-		Set<Integer> set = new TreeSet<Integer>();
-		for (int row = startIndexRow; row < startIndexRow + CELL_SIZE; row += CELL_SIZE) {
-			for (int col = startIndexCol; col < startIndexCol + CELL_SIZE; col += CELL_SIZE) {
-				int value = getIntFromChar(newBoard[row][col]);
+	/** 
+	 * Check duplicates in a cell
+	 * 
+	 * @param board
+	 * @param startIndexRow
+	 * @param startIndexCol
+	 */
+	private void checkCell(Cell[][] board, int startIndexRow, int startIndexCol) {
+		for (int row = startIndexRow; row < startIndexRow + CELL_SIZE; row++) {
+			for (int col = startIndexCol; col < startIndexCol + CELL_SIZE; col++) {
+				int value = board[row][col].getValue();
 				if (value > 0) {
-					//works if check duplicates on row and check duplicates on column are done before
-					//else start from row2 from row and col2 from col
-					for (int row2 = row + 1; row2 < startIndexRow + CELL_SIZE; row2++) {
-						for (int col2 = col + 1; col2 < startIndexCol + CELL_SIZE; col2++) {
-							if ((row == row2 && col == col2) || getIntFromChar(newBoard[row2][col2]) == 0) {
+					for (int row2 = row; row2 < startIndexRow + CELL_SIZE; row2++) {
+						for (int col2 = startIndexCol; col2 < startIndexCol + CELL_SIZE; col2++) {
+							int currentValue = board[row2][col2].getValue();
+							if ((row == row2 && col == col2) || currentValue == 0) {
 								continue;
 							} else {
-								int currentValue = getIntFromChar(newBoard[row2][col2]);
 								if (value == currentValue) {
-									markValueAsInvalid(modifiedBoard, row, col);
-									markValueAsInvalid(modifiedBoard, row2, col2);
+									markValueAsInvalid(updatedBoard, row, col);
+									markValueAsInvalid(updatedBoard, row2, col2);
 								}
 							}
 						}
@@ -97,104 +214,84 @@ public class SudokuServiceImpl implements SudokuService {
 			}
 		}
 	}
-
-	private void checkCols(char[][] newBoard) {
-		for (int col = 0; col < ROWS; col++) {
-			for (int row = 0; row < ROWS - 1; row++) {
-				int value = getIntFromChar(newBoard[row][col]);
-				if (value > 0) {
-					for (int i = row + 1; i < ROWS; i++) {
-						int currentValue = getIntFromChar(newBoard[i][col]);
-						if (value == currentValue) {
-							// mark as invalid value (from A to I)
-							markValueAsInvalid(modifiedBoard, row, col);
-							markValueAsInvalid(modifiedBoard, i, col);
-						}
-					}
-				}
-			}
+	
+	/**
+	 * Mark cell as invalid Cell.Type
+	 * 
+	 * @param board
+	 * @param row
+	 * @param col
+	 */
+	private void markValueAsInvalid(Cell[][] board, int row, int col) {
+		
+		//if value is not fixed(from initial board) mark it as invalid
+		Cell cell = board[row][col];
+		if (!cell.getType().equals(Cell.Type.FIXED)) {
+			cell.setType(Cell.Type.INVALID);
 		}
 	}
 
-	private void checkRows(char[][] newBoard) {
-
-		for (int row = 0; row < ROWS; row++) {
-			for (int col = 0; col < ROWS - 1; col++) {
-				int value = getIntFromChar(newBoard[row][col]);
-				if (value > 0) {
-					for (int i = col + 1; i < ROWS; i++) {
-						int currentValue = getIntFromChar(newBoard[row][i]);
-						if (value == currentValue) {
-							// mark as invalid value (from A to I)
-							markValueAsInvalid(modifiedBoard, row, col);
-							markValueAsInvalid(modifiedBoard, row, i);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	// convert a char to numbers from 0 to 9
-	public int getIntFromChar(char c) {
+	
+	/**
+	 * Convert char to number
+	 * 0-9, a-i become numbers 0-9
+	 * other values become 0
+	 * 
+	 * @param c
+	 * @return
+	 */
+	private int decodeValue(char c) {
 		if (c >= '0' && c <= '9') {
 			return (c - '0');
 		} else if (c >= 'a' && c <= 'i') {
 			return (c - 'a' + 1);
-		} else if (c >= 'A' && c <= 'I') {
-			return (c - 'A' + 1);
 		} else {
-			throw new IllegalArgumentException();
-		}
-	}
-
-	// convert integer (0-9) to char from a to i
-	// apply for non-editable elements from initial board
-//	public char getCharForFixedValue(int value) {
-//		if (value >= 1 && value <= 9) {
-//			return (char) (value + 'a');
-//		} else {
-//			throw new IllegalArgumentException();
-//		}
-//	}
-
-	// convert integer (0-9) to char from A to I
-	// apply for invalid elements (duplicated on row or column or in cell)
-	public char getCharForInvalidValue(int value) {
-		if (value >= 1 && value <= 9) {
-			return (char) (value + 'A' - 1);
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
-
-	// convert integer number (0-9) to char
-	public char getCharForValue(int value) {
-		if (value >= 1 && value <= 9) {
-			return (char) (value + '0');
-		} else {
-			throw new IllegalArgumentException();
+			return 0;
 		}
 	}
 	
-	public void markValueAsInvalid(char[][] board, int row, int col) {
-		//get value at current position and mark it as invalid value
-		char invalidChar = getCharForInvalidValue(getIntFromChar(board[row][col]));
+	/**
+	 * Convert number to char
+	 * 
+	 * duplicates 1-9 become A-I
+	 * values from initial board 1-9 become a-i
+	 * validated moves 1-9 become 1-9
+	 * 
+	 * @param cell
+	 * @return
+	 */
+	private char encodeValue(Cell cell) {
+		int value = cell.getValue();
+		char encodedValue = '0';
 		
-		//if value is not fixed(from initial board) mark it as invalid
-		if (board[row][col] < 'a' || board[row][col] > 'i')
-			board[row][col] = invalidChar;
+		if (cell.getType().equals(Cell.Type.INVALID)) {
+			//1-9 become A-I
+			encodedValue = (char) (value + 'A' - 1);
+		} else if (cell.getType().equals(Cell.Type.FIXED)) {
+			//1-9 become a-i
+			encodedValue = (char) (value + 'a' - 1);
+		} else {
+			encodedValue = (char) (value + '0');
+		}
+		
+		return encodedValue;
+	}
+	
+	/**
+	 * Convert board of Cells to encoded string
+	 * 
+	 * @param board
+	 * @return
+	 */
+	private String getStringFromCellArray(Cell[][] board) {
+		String boardValue = "";
+		for (int row = 0; row < ROWS; row++) {
+			for (int col = 0; col < ROWS; col++) {
+				char encodedValue = encodeValue(board[row][col]);
+				boardValue += encodedValue;
+			}
+		}
+		return boardValue;
 	}
 
-	public char[][] convertToBidimensional(final char[] array, final int rows, final int cols) {
-		if (array.length != (rows * cols))
-			throw new IllegalArgumentException("Invalid array length");
-
-		// System.arraycopy(src, srcPos, dest, destPos, length);
-		char[][] bidi = new char[rows][cols];
-		for (int i = 0; i < rows; i++)
-			System.arraycopy(array, (i * cols), bidi[i], 0, cols);
-
-		return bidi;
-	}
 }
