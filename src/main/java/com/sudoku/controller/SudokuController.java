@@ -21,7 +21,8 @@ public class SudokuController {
 
 	@RequestMapping(value = "/moves", method = RequestMethod.POST)
 	public String verifyMoves(@RequestBody String data) {
-		String validatedMoves = sudokuService.validateMoves(data);
+		String validatedMoves = sudokuService.updateBoard(data);
+		
 		return validatedMoves;
 	}
 }

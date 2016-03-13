@@ -4,5 +4,5 @@ public interface SudokuService {
 
 	String getBoard();
 
-	String validateMoves(String moves);
+	String updateBoard(String moves);
 }
