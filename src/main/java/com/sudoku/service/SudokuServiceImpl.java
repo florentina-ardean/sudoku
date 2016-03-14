@@ -1,7 +1,16 @@
 package com.sudoku.service;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sudoku.model.Board;
 import com.sudoku.model.Cell;
 
 /**
@@ -22,7 +31,7 @@ public class SudokuServiceImpl implements SudokuService {
 	private static final int CELL_SIZE = 3;
 
 	/**
-	 * return a string of length 81
+	 * Returns a string of length 81
 	 */
 	@Override
 	public String getBoard() {
@@ -36,7 +45,32 @@ public class SudokuServiceImpl implements SudokuService {
 			   "0f000hd0c" + 
 			   "bd000000i";
 	}
-
+	
+	/**
+	 * Returns a json of 
+	 * 81 Cells and boolean solved
+	 */
+	@Override
+	public Board getBoardFromJson() {
+		Board board = getBoardFromFile("/data/SudokuBoard.data");
+		return board;
+	}
+	
+	/**
+	 * Returns a json of 
+	 * 81 Cells and boolean solved
+	 */
+	public Board getBoardFromJson(String fileName) {
+		Board board = getBoardFromFile(fileName);
+		return board;
+	}
+	
+	/**
+	 * Validates a board of sudoku
+	 * 
+	 * @param moves
+	 * @return
+	 */
 	@Override
 	public String updateBoard(String moves) { 
 		//char[][] newBoard = convertToBidimensional(moves.toCharArray(), ROWS, ROWS);
@@ -45,7 +79,6 @@ public class SudokuServiceImpl implements SudokuService {
 		Cell[][] board = convertToBoardOfCells(moves.toCharArray(), ROWS, ROWS);
 		
 		if (board != null) {
-			System.out.println(getStringFromCellArray(board));
 			
 			updatedBoard = initBoard(board);
 			
@@ -60,8 +93,44 @@ public class SudokuServiceImpl implements SudokuService {
 			// check duplicates on cell
 			checkCells(updatedBoard);
 			
-	
+			//convert bidimensional array to String
 			modBoard = getStringFromCellArray(updatedBoard);
+		}
+		
+		return modBoard;
+	}
+	
+	/**
+	 * Validates a board of sudoku
+	 * 
+	 * @param board
+	 * @return
+	 */
+	@Override
+	public Board updateBoard(Board board) {
+		Board modBoard = board;
+		
+		if (modBoard != null) {
+			
+			Cell[][] cells = convertToBoardOfCells(board, ROWS, ROWS);
+			
+			if (cells != null) {
+				updatedBoard = initBoard(cells);
+				
+				// check duplicates on row
+				checkRows(updatedBoard);
+				
+		
+				// check duplicates on column
+				checkCols(updatedBoard);
+				
+		
+				// check duplicates on cell
+				checkCells(updatedBoard);
+				
+				//convert bidimensional array to Board of Cells 
+				modBoard = getBoardFromBidimensionalCellArray(updatedBoard);
+			}
 		}
 		
 		return modBoard;
@@ -88,7 +157,7 @@ public class SudokuServiceImpl implements SudokuService {
 				
 				Cell cell = new Cell();
 				cell.setValue(number);
-				cell.setType(isFixed(value) ? Cell.Type.FIXED : Cell.Type.VALID);
+				cell.setType(isFixed(value) ? Cell.Type.fixed : Cell.Type.valid);
 				
 				cells[i][j] = cell;
 			}
@@ -226,8 +295,8 @@ public class SudokuServiceImpl implements SudokuService {
 		
 		//if value is not fixed(from initial board) mark it as invalid
 		Cell cell = board[row][col];
-		if (!cell.getType().equals(Cell.Type.FIXED)) {
-			cell.setType(Cell.Type.INVALID);
+		if (!cell.getType().equals(Cell.Type.fixed)) {
+			cell.setType(Cell.Type.invalid);
 		}
 	}
 
@@ -264,10 +333,10 @@ public class SudokuServiceImpl implements SudokuService {
 		int value = cell.getValue();
 		char encodedValue = '0';
 		
-		if (cell.getType().equals(Cell.Type.INVALID)) {
+		if (cell.getType().equals(Cell.Type.invalid)) {
 			//1-9 become A-I
 			encodedValue = (char) (value + 'A' - 1);
-		} else if (cell.getType().equals(Cell.Type.FIXED)) {
+		} else if (cell.getType().equals(Cell.Type.fixed)) {
 			//1-9 become a-i
 			encodedValue = (char) (value + 'a' - 1);
 		} else {
@@ -292,6 +361,95 @@ public class SudokuServiceImpl implements SudokuService {
 			}
 		}
 		return boardValue;
+	}
+	
+	/**
+	 * Get data from json file and convert it to Board
+	 * 
+	 * @param jsonUrl
+	 * @return
+	 */
+	private Board getBoardFromFile(String fileName) {
+		Resource resource = new ClassPathResource(fileName);
+		File file = null;
+
+		ObjectMapper mapper = new ObjectMapper();
+		Board board = null;
+
+		try {
+			file = resource.getFile();
+			// JSON from file to Object
+			board = mapper.readValue(file, Board.class);
+			
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found: " + fileName);
+		} catch (IOException e) {
+			System.out.println("IO exception when parsing file.");
+		} 
+
+		return board;
+	}
+	
+	/**
+	 * Convert array of chars to board of Cells
+	 * 
+	 * @param array
+	 * @param rows
+	 * @param cols
+	 * @return
+	 */
+	private Cell[][] convertToBoardOfCells(Board board, final int rows, final int cols) {
+		if (board.getCells().size() != (rows * cols)) {
+			return null;
+		}
+		
+		Cell[][] cells = new Cell[rows][cols];
+
+		for (int i = 0; i < ROWS; i++) {
+			for (int j = 0; j < ROWS; j++) {
+				int index = i * ROWS + j;
+				Cell cell = new Cell();
+				cell.setValue(board.getCells().get(index).getValue());
+				cell.setType(board.getCells().get(index).getType());
+
+				cells[i][j] = cell;
+			}
+		}
+
+		return cells;
+	}
+	
+	/**
+	 * Covert bidimensional Cell array to Board Check if Board is Completed
+	 * 
+	 * @param cells
+	 * @return
+	 */
+	private Board getBoardFromBidimensionalCellArray(Cell[][] cells) {
+		Board board = new Board();
+		board.setCells(new ArrayList<Cell>(ROWS * ROWS));
+
+		boolean solved = true;
+		ArrayList<Cell> modCells = board.getCells();
+
+		for (int i = 0; i < ROWS; i++) {
+			for (int j = 0; j < ROWS; j++) {
+				int index = i * ROWS + j;
+
+				Cell myCell = new Cell();
+				myCell.setValue(cells[i][j].getValue());
+				myCell.setType(cells[i][j].getType());
+
+				modCells.add(index, myCell);
+
+				boolean cellValid = myCell.getValue() != 0 && (myCell.getType() != Cell.Type.invalid);
+				solved = solved && cellValid;
+			}
+		}
+		
+		board.setSolved(solved);
+		
+		return board;
 	}
 
 }

@@ -1,8 +1,10 @@
 package com.sudoku.model;
 
+import scala.annotation.varargs;
+
 public class Cell {
 	public enum Type {
-		FIXED, VALID, INVALID
+		fixed, valid, invalid
 	}
 
 	private int value;
@@ -32,6 +34,22 @@ public class Cell {
 
 	public void setType(Type type) {
 		this.type = type;
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		boolean isEqual = false;
+		
+		Cell cell = (Cell) object;
+		
+		if (cell != null) {
+			if (this.value == cell.value &&
+					this.type.equals(cell.type)) {
+				isEqual = true;
+			}
+		}
+		
+		return isEqual;
 	}
 
 
