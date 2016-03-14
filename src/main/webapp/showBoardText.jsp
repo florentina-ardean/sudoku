@@ -9,16 +9,18 @@
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 
-<link rel="stylesheet" href="/sudoku/css/sudoku.css" type="text/css" />
-<script type="text/javascript" src="/sudoku/js/debug_data.js"></script>
-<script type="text/javascript" src="/sudoku/js/utils.js"></script>
-<script type="text/javascript" src="/sudoku/js/sudoku.js"></script>
+<link rel="stylesheet" href="css/sudoku.css" type="text/css" />
+<script type="text/javascript" src="js/sudoku.js"></script>
 
 <script type="text/javascript">
 	$(document).ready(function() {
-
+		
+		var url = document.URL;
+		var showBoard = "showBoardText.jsp";
+		var baseUrl = url.substring(0, url.length - showBoard.length);
+		
 		xhttp = new XMLHttpRequest();
-		xhttp.open("GET", "/sudoku/board.json", true);
+		xhttp.open("GET", baseUrl +"board.json", true);
 		xhttp.send();
 
 		xhttp.onreadystatechange = function() {
@@ -36,7 +38,7 @@
 		$(":button").click(function(event) {
 			var myData = getBoardMoves('sudoku');
 			req = new XMLHttpRequest();
-			req.open("POST", "/sudoku/moves.json", true);
+			req.open("POST", baseUrl + "moves.json", true);
 			req.setRequestHeader("Content-type", "application/json");
 			req.setRequestHeader("Accept", "application/json");
 			req.send(myData);
