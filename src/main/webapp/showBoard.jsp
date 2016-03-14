@@ -5,49 +5,68 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Sudoku</title>
+
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-<script>
+
+<link rel="stylesheet" href="/sudoku/css/sudoku.css" type="text/css" />
+<script type="text/javascript" src="/sudoku/js/sudoku.js"></script>
+
+<script type="text/javascript">
 	$(document).ready(function() {
 
 		xhttp = new XMLHttpRequest();
-		xhttp.open("GET", "/sudoku/board.json", true);
+		xhttp.open("GET", "/sudoku/sudokuboard.json", true);
 		xhttp.send();
 
 		xhttp.onreadystatechange = function() {
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
-				$('#boarddiv').html(xhttp.responseText);
+			
+				var s = $('sudoku').empty;
+		        makeSudoku('sudoku');
+		        
+                var jsonData = JSON.parse(xhttp.responseText);
+                populateSudokuFromObject('sudoku', jsonData);
 			}
 		};
 
 		$(":button").click(function(event) {
-			var myData = "98";
-
+			var myData = getBoardMovesJSON('sudoku');
+			
 			req = new XMLHttpRequest();
-			req.open("POST", "/sudoku/moves.json", true);
+			req.open("POST", "/sudoku/sudokumoves.json", true);
 			req.setRequestHeader("Content-type", "application/json");
 			req.setRequestHeader("Accept", "application/json");
 			req.send(myData);
 
 			req.onreadystatechange = function() {
 				if (req.readyState == 4 && req.status == 200) {
-					$('#movesdiv').html(req.responseText);
+					var s = $('sudoku').empty;
+			        makeSudoku('sudoku');
+			        
+			        
+			        var jsonData = JSON.parse(req.responseText);
+			        populateSudokuFromObject('sudoku', jsonData);
 				}
 			};
 
 			event.preventDefault();
 		});
 	});
-</script>
+</script>  
+ 
 </head>
 <body>
-	<h1>Hello Sudoku!</h1>
-
+	<center><h1>TEST SUDOKU</h1>
+	
+	<div id="sudoku"></div>
+	
 	<form>
-		Board: <span id="boarddiv">Empty</span> <br /> Moves: <span
-			id="movesdiv">Empty</span> <br />
-		<button>Check moves</button>
+		<br /> 
+		<button>Validate moves</button>
 	</form>
+	
+	</center>
 
 </body>
 </html>
