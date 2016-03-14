@@ -9,14 +9,19 @@
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
 
-<link rel="stylesheet" href="/sudoku/css/sudoku.css" type="text/css" />
-<script type="text/javascript" src="/sudoku/js/sudoku.js"></script>
+<link rel="stylesheet" href="css/sudoku.css" type="text/css" />
+<script type="text/javascript" src="js/sudoku.js"></script>
 
 <script type="text/javascript">
 	$(document).ready(function() {
 
+		var url = document.URL;
+		var showBoard = "showBoard.jsp";
+		var baseUrl = url.substring(0, url.length - showBoard.length);
+		
+		
 		xhttp = new XMLHttpRequest();
-		xhttp.open("GET", "/sudoku/sudokuboard.json", true);
+		xhttp.open("GET", baseUrl + "sudokuboard.json", true);
 		xhttp.send();
 
 		xhttp.onreadystatechange = function() {
@@ -34,7 +39,7 @@
 			var myData = getBoardMovesJSON('sudoku');
 			
 			req = new XMLHttpRequest();
-			req.open("POST", "/sudoku/sudokumoves.json", true);
+			req.open("POST", baseUrl + "sudokumoves.json", true);
 			req.setRequestHeader("Content-type", "application/json");
 			req.setRequestHeader("Accept", "application/json");
 			req.send(myData);
