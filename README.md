@@ -26,6 +26,7 @@ https://en.wikipedia.org/wiki/Sudoku (first paragraph).
 * Summary of set up
 
 You need to have/install: 
+
 -git	(tested with git 2.7.1.windows.2)
 
 -maven 	(tested with apache-maven-3.0.5)
