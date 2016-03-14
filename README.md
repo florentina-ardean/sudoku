@@ -23,9 +23,9 @@ https://en.wikipedia.org/wiki/Sudoku (first paragraph).
 * Summary of set up
 
 You need to have/install: 
--git	- tested with git 2.7.1.windows.2
--maven 	- tested with apache-maven-3.0.5
--tomcat - tested with apache-tomcat-8.0.30 (or any other web server)
+-git	(tested with git 2.7.1.windows.2)
+-maven 	(tested with apache-maven-3.0.5)
+-tomcat (tested with apache-tomcat-8.0.30) - or any other web server
 
 
 * Configuration
