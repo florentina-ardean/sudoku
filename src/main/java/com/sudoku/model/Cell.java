@@ -1,7 +1,5 @@
 package com.sudoku.model;
 
-import scala.annotation.varargs;
-
 public class Cell {
 	public enum Type {
 		fixed, valid, invalid

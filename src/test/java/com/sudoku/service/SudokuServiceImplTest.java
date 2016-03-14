@@ -1,8 +1,8 @@
 package com.sudoku.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +15,6 @@ import com.sudoku.model.Cell;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = SudokuServiceImpl.class)
-//@WebAppConfiguration
 public class SudokuServiceImplTest {
 	@Autowired
 	SudokuService sudokuService;
