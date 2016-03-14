@@ -33,8 +33,10 @@ You need to have/install:
 Get the project from the repository to your <project_location>:
 $git clone https://florentina_ardean@bitbucket.org/florentina_ardean/sudoku.git
 
-Go to <project_location>/sudoku (where the pom.xml file is located)
-Run command: mvn install
+Go to <project_location>/sudoku (where the pom.xml file is located).
+
+Run command: mvn install.
+
 If everything goes ok you should have the war file: <project_location>/sudoku/target/sudoku-0.0.1-SNAPSHOT.war
 
 
