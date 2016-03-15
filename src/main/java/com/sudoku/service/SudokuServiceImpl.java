@@ -370,17 +370,16 @@ public class SudokuServiceImpl implements SudokuService {
 	 * @return
 	 */
 	private Board getBoardFromFile(String fileName) {
-		Resource resource = new ClassPathResource(fileName);
-		File file = null;
-
-		ObjectMapper mapper = new ObjectMapper();
 		Board board = null;
-
+		
+		Resource resource = new ClassPathResource(fileName);
+		
 		try {
-			file = resource.getFile();
-			// JSON from file to Object
-			board = mapper.readValue(file, Board.class);
+			File file = resource.getFile();
 			
+			// JSON from file to Object
+			ObjectMapper mapper = new ObjectMapper();
+			board = mapper.readValue(file, Board.class);
 		} catch (FileNotFoundException e) {
 			System.out.println("File not found: " + fileName);
 		} catch (IOException e) {
