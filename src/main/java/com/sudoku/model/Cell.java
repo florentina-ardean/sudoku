@@ -12,7 +12,12 @@ public class Cell {
 	public Cell() {
 
 	}
-
+	
+	public Cell(int value, Type type) {
+		this.value = value;
+		this.type = type;
+	}
+	
 	public Cell(Cell cell) {
 		this.value = cell.getValue();
 		this.type = cell.getType();
@@ -35,20 +40,28 @@ public class Cell {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		boolean isEqual = false;
-		
-		Cell cell = (Cell) object;
-		
-		if (cell != null) {
-			if (this.value == cell.value &&
-					this.type.equals(cell.type)) {
-				isEqual = true;
-			}
-		}
-		
-		return isEqual;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + value;
+		return result;
 	}
 
-
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Cell other = (Cell) obj;
+		if (type != other.type)
+			return false;
+		if (value != other.value)
+			return false;
+		return true;
+	}
+	
 }
